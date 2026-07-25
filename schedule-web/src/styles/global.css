@@ -1,0 +1,153 @@
+:root {
+  --primary-color: #1677ff;
+  --success-color: #52c41a;
+  --warning-color: #fa8c16;
+  --error-color: #f5222d;
+  --text-primary: #333333;
+  --text-secondary: #8c8c8c;
+  --bg-light: #f5f5f5;
+  --border-radius: 8px;
+  --sidebar-width: 220px;
+  --header-height: 56px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text-primary);
+  background: #f0f2f5;
+}
+
+.login-page {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.login-card {
+  width: 400px;
+  text-align: center;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.login-card .ant-card-body { padding: 40px 32px; }
+
+.sidebar-logo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.chat-container {
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+.chat-bubble {
+  display: flex;
+  gap: 12px;
+  max-width: 75%;
+  margin-bottom: 16px;
+}
+
+.chat-bubble--user {
+  flex-direction: row-reverse;
+  margin-left: auto;
+}
+
+.chat-bubble--agent {
+  flex-direction: row;
+}
+
+.chat-bubble__avatar {
+  font-size: 24px;
+  color: #999;
+  flex-shrink: 0;
+}
+
+.chat-bubble__body {
+  padding: 10px 14px;
+  border-radius: 12px;
+}
+
+.chat-bubble--user .chat-bubble__body {
+  background: #1677ff;
+  color: #fff;
+  border-radius: 12px 12px 0 12px;
+}
+
+.chat-bubble--agent .chat-bubble__body {
+  background: #e8e8e8;
+  color: #333;
+  border-radius: 12px 12px 12px 0;
+}
+
+.chat-bubble__text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.chat-bubble__questions {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
+.chat-bubble__questions li {
+  margin-bottom: 4px;
+}
+
+.plan-timeline {
+  display: flex;
+  overflow-x: auto;
+  gap: 0;
+  min-height: 120px;
+}
+
+.plan-day {
+  flex: 1;
+  min-width: 100px;
+  border-right: 1px solid #f0f0f0;
+}
+
+.plan-day-header {
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+  border-bottom: 1px solid #f0f0f0;
+  font-weight: 500;
+}
+
+.plan-day-body {
+  padding: 4px;
+  min-height: 80px;
+}
+
+.plan-item-block {
+  padding: 6px 8px;
+  margin: 2px 0;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #fff;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plan-item-block--conflict {
+  border: 2px dashed #f5222d;
+}
