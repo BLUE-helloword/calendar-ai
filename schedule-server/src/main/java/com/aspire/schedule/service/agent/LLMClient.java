@@ -71,7 +71,10 @@ public class LLMClient {
                     tokens = usage.getInt("total_tokens", 0);
                 }
 
-                log.info("LLM call success, model={}, latency={}ms, tokens={}", model, latencyMs, tokens);
+                int promptTokens = usage != null ? usage.getInt("prompt_tokens", 0) : 0;
+                int completionTokens = usage != null ? usage.getInt("completion_tokens", 0) : 0;
+                log.info("LLM call: model={}, latency={}ms, tokens={} (prompt={}, completion={})",
+                        model, latencyMs, tokens, promptTokens, completionTokens);
                 return LLMResponse.success(content, tokens, latencyMs);
             }
 

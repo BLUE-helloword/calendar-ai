@@ -1,14 +1,14 @@
 import dayjs from 'dayjs';
 
-export const START_HOUR = 8;
-export const END_HOUR = 20;
+export const START_HOUR = 0;
+export const END_HOUR = 24;
 export const HOUR_HEIGHT = 60;
 export const TOTAL_HOURS = END_HOUR - START_HOUR;
 
 /** 获取指定日期所在周的周一至周日 */
 export const getWeekDays = (date: Date | string): dayjs.Dayjs[] => {
   const d = dayjs(date);
-  const monday = d.startOf('week').add(1, 'day'); // dayjs周日为一周起点，+1转为周一
+  const monday = d.startOf('week'); // zh-cn locale 下周一即为起点
   return Array.from({ length: 7 }, (_, i) => monday.add(i, 'day'));
 };
 

@@ -13,6 +13,7 @@ import com.aspire.schedule.service.ReminderService;
 import com.aspire.schedule.service.ScheduleService;
 import com.aspire.schedule.service.TaskService;
 import com.aspire.schedule.service.agent.ChatOrchestrator;
+import lombok.extern.slf4j.Slf4j;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,12 +26,25 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Tag(name = "AI 对话")
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/chat")
 @RequiredArgsConstructor
 public class ChatController {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter ISO_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
+    private LocalDateTime parseTime(String timeStr) {
+        if (timeStr == null || timeStr.isEmpty()) {
+            throw new IllegalArgumentException("时间不能为空");
+        }
+        // 兼容 ISO 格式 (yyyy-MM-ddTHH:mm:ss) 和空格格式 (yyyy-MM-dd HH:mm:ss)
+        if (timeStr.contains("T")) {
+            return LocalDateTime.parse(timeStr, ISO_FORMATTER);
+        }
+        return LocalDateTime.parse(timeStr, FORMATTER);
+    }
 
     private final JwtTokenProvider jwtTokenProvider;
     private final ChatOrchestrator chatOrchestrator;
@@ -52,8 +66,12 @@ public class ChatController {
     public ApiResponse<ChatResponseVO> sendMessage(@RequestBody @Valid ChatRequestDTO dto,
                                                     HttpServletRequest request) {
         Long userId = getUserId(request);
+        long msgStart = System.currentTimeMillis();
         ChatResponseVO response = chatOrchestrator.processMessage(
                 dto.getSessionId(), dto.getMessage(), userId);
+        log.info("Chat message processed: sessionId={}, type={}, latency={}ms",
+                dto.getSessionId() != null ? dto.getSessionId() : "new",
+                response.getType(), System.currentTimeMillis() - msgStart);
         return ApiResponse.ok(response);
     }
 
@@ -66,8 +84,8 @@ public class ChatController {
         int taskCount = 0, scheduleCount = 0, reminderCount = 0;
 
         for (PlanConfirmDTO.PlanItemInput item : dto.getItems()) {
-            LocalDateTime startTime = LocalDateTime.parse(item.getStartTime(), FORMATTER);
-            LocalDateTime endTime = LocalDateTime.parse(item.getEndTime(), FORMATTER);
+            LocalDateTime startTime = parseTime(item.getStartTime());
+            LocalDateTime endTime = parseTime(item.getEndTime());
             String priority = item.getPriority() != null ? item.getPriority() : "MEDIUM";
 
             Task task = new Task();
@@ -103,6 +121,9 @@ public class ChatController {
             reminderService.create(reminder);
             reminderCount++;
         }
+
+        log.info("Schedule confirmed: sessionId={}, tasks={}, schedules={}, reminders={}",
+                dto.getSessionId(), taskCount, scheduleCount, reminderCount);
 
         ChatResponseVO vo = new ChatResponseVO();
         vo.setSessionId(dto.getSessionId());

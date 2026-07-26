@@ -29,7 +29,7 @@ const CalendarPanel: React.FC = () => {
   const [selectedDay, setSelectedDay] = useState<string>(currentDate.format('YYYY-MM-DD'));
 
   const weekBounds = useMemo(() => {
-    const monday = currentDate.startOf('week').add(1, 'day');
+    const monday = currentDate.startOf('week');
     const sunday = monday.add(6, 'day');
     return {
       weekStart: monday.format('YYYY-MM-DD'),
@@ -148,7 +148,7 @@ const CalendarPanel: React.FC = () => {
         <div style={{ display: 'flex', borderBottom: '2px solid #1677ff', margin: '0 16px' }}>
           <div style={{ width: 56, flexShrink: 0 }} />
           {(() => {
-            const monday = currentDate.startOf('week').add(1, 'day');
+            const monday = currentDate.startOf('week');
             const dayNames = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
             const today = dayjs().format('YYYY-MM-DD');
             return Array.from({ length: 7 }, (_, i) => {
@@ -196,7 +196,7 @@ const CalendarPanel: React.FC = () => {
           {currentView === 'week' && (
             <TimeGrid days={mergedDays.length > 0 ? mergedDays : (
               Array.from({ length: 7 }, (_, i) => {
-                const d = currentDate.startOf('week').add(i + 1, 'day');
+                const d = currentDate.startOf('week').add(i, 'day');
                 return { date: d.format('YYYY-MM-DD'), dayOfWeek: '', items: [] };
               })
             )} />

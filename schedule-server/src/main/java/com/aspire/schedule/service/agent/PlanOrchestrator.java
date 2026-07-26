@@ -47,17 +47,22 @@ public class PlanOrchestrator {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime thirtyDaysLater = now.plusDays(30);
         List<Schedule> existingSchedules = scheduleService.findByUserAndRange(userId, now, thirtyDaysLater);
+        log.debug("Goal {} schedule planning: {} existing schedules in next 30 days", goalId, existingSchedules.size());
 
         String deadline = goal.getParsedDeadline() != null
                 ? goal.getParsedDeadline().toString()
                 : null;
 
         // 调用排期 Agent
+        long planStart = System.currentTimeMillis();
         PlanResult result = schedulePlanner.plan(
                 goal.getParsedItems(), deadline, existingSchedules, userFeedback);
 
         // 更新轮次
         goalService.incrementScheduleRound(goalId);
+        long planLatency = System.currentTimeMillis() - planStart;
+        log.info("Goal {} schedule planning done: planItems={}, latency={}ms", goalId,
+                result != null && result.getPlan() != null ? result.getPlan().size() : 0, planLatency);
         currentRound++;
 
         // 保存排期结果到 Goal.partialResult

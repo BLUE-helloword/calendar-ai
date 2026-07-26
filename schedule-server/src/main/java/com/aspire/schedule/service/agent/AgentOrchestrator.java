@@ -39,8 +39,12 @@ public class AgentOrchestrator {
         // 2. 意图解析
         String sessionId = executionTracker.createSession();
         ParseResult result = intentParser.parse(userInput, conversationHistory);
-        log.info("Agent parse round {}: userInput={}, confidence={}, missingInfo={}",
-                currentRound + 1, userInput, result.getConfidence(), result.getMissingInfo());
+        log.info("Agent parse round {} for goal {}: inputLen={}, confidence={}, hasDeadline={}, missing={}",
+                currentRound + 1, goalId,
+                userInput != null ? userInput.length() : 0,
+                String.format("%.2f", result.getConfidence()),
+                result.getParsedDeadline() != null,
+                result.getMissingInfo());
 
         // 3. 检查是否为 API 错误（不可恢复，不要进入追问循环）
         if (result.getConfidence() == 0.0
