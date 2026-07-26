@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout, Menu } from 'antd';
+import { Layout, Menu, Divider } from 'antd';
 import {
   HomeOutlined, UnorderedListOutlined,
   BarChartOutlined, SettingOutlined, LogoutOutlined,
@@ -40,6 +40,7 @@ const Sidebar: React.FC = () => {
           onClick={({ key }) => navigate(key)}
           style={{ flex: 1 }}
         />
+        <Divider style={{ margin: '8px 16px', borderColor: 'rgba(255,255,255,0.1)' }} />
         <Menu
           theme="dark"
           mode="inline"

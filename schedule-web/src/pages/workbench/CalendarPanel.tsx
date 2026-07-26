@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Segmented, Spin, Empty, Button, Typography, Space } from 'antd';
+import { Segmented, Spin, Button, Typography, Space } from 'antd';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import type { SegmentedValue } from 'antd/es/segmented';
 import MonthView from '../../components/calendar/MonthView';
@@ -194,11 +194,12 @@ const CalendarPanel: React.FC = () => {
             />
           )}
           {currentView === 'week' && (
-            mergedDays.length > 0 ? (
-              <TimeGrid days={mergedDays} />
-            ) : (
-              <Empty description="本周暂无日程" style={{ marginTop: 80 }} />
-            )
+            <TimeGrid days={mergedDays.length > 0 ? mergedDays : (
+              Array.from({ length: 7 }, (_, i) => {
+                const d = currentDate.startOf('week').add(i + 1, 'day');
+                return { date: d.format('YYYY-MM-DD'), dayOfWeek: '', items: [] };
+              })
+            )} />
           )}
           {currentView === 'day' && (
             <DayView

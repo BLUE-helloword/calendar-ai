@@ -38,6 +38,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ value, onChange, placeholder, d
         placeholder={placeholder || '描述你想安排的事项...'}
         autoSize={{ minRows: 2, maxRows: 6 }}
         disabled={disabled}
+        style={{ paddingRight: 80 }}
         onPressEnter={(e) => {
           // Let parent handle Enter key
         }}
