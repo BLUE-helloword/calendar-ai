@@ -79,7 +79,14 @@ public class ChatOrchestrator {
         }
 
         if (result.isNeedsClarification()) {
-            return buildClarifyResponse(goal.getId(), result);
+            // 将 AI 的追问存入对话历史，下次解析时 LLM 能看到上下文
+            ChatResponseVO clarifyVO = buildClarifyResponse(goal.getId(), result);
+            String aiResponse = "AI: " + clarifyVO.getText();
+            Goal updateGoal = new Goal();
+            updateGoal.setId(goal.getId());
+            updateGoal.setConversation("用户: " + message + "\n" + aiResponse);
+            goalService.updateParsedResult(goal.getId(), updateGoal);
+            return clarifyVO;
         }
 
         // 解析完成，保存解析结果并自动进入排期
@@ -147,7 +154,15 @@ public class ChatOrchestrator {
         }
 
         if (result.isNeedsClarification()) {
-            return buildClarifyResponse(goal.getId(), result);
+            // 将 AI 的追问存入对话历史，下次解析时 LLM 能看到上下文
+            ChatResponseVO clarifyVO = buildClarifyResponse(goal.getId(), result);
+            String aiResponse = "AI: " + clarifyVO.getText();
+            history += "\n" + aiResponse;
+            Goal updateGoal2 = new Goal();
+            updateGoal2.setId(goal.getId());
+            updateGoal2.setConversation(history);
+            goalService.updateParsedResult(goal.getId(), updateGoal2);
+            return clarifyVO;
         }
 
         // 解析完成，保存解析结果并自动进入排期

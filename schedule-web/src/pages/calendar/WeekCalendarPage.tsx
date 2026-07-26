@@ -47,7 +47,7 @@ const WeekCalendarPage: React.FC = () => {
             }
             styles={{ body: { padding: 0 } }}
           >
-            <div style={{ overflowX: 'auto' }}>
+            <div>
               {data.days.every((d) => d.items.length === 0) ? (
                 <Empty description="本周暂无日程" style={{ padding: 60 }} />
               ) : (

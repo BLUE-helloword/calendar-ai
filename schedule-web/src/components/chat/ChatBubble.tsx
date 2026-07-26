@@ -35,22 +35,6 @@ const ChatBubble: React.FC<Props> = ({ role, content, questions, type, schedule,
           </div>
         )}
 
-        {/* Clarify: question list */}
-        {type === 'clarify' && questions && questions.length > 0 && (
-          <div style={{ marginTop: 8 }}>
-            {questions.map((q, i) => (
-              <div key={i} style={{
-                padding: '4px 8px',
-                marginBottom: 4,
-                fontSize: 13,
-                color: '#1677ff',
-              }}>
-                {i + 1}. {q}
-              </div>
-            ))}
-          </div>
-        )}
-
         {/* Schedule card — rendered cleanly without grey bubble */}
         {isSchedule && schedule && (
           <div>

@@ -81,45 +81,71 @@ public class ChatController {
                                                 HttpServletRequest request) {
         Long userId = getUserId(request);
 
+        // 按标题归并：同名项合并为一个 Task，多个 Schedule
+        var grouped = new java.util.LinkedHashMap<String, java.util.List<PlanConfirmDTO.PlanItemInput>>();
+        for (PlanConfirmDTO.PlanItemInput item : dto.getItems()) {
+            String key = item.getTitle().trim();
+            grouped.computeIfAbsent(key, k -> new java.util.ArrayList<>()).add(item);
+        }
+
         int taskCount = 0, scheduleCount = 0, reminderCount = 0;
 
-        for (PlanConfirmDTO.PlanItemInput item : dto.getItems()) {
-            LocalDateTime startTime = parseTime(item.getStartTime());
-            LocalDateTime endTime = parseTime(item.getEndTime());
-            String priority = item.getPriority() != null ? item.getPriority() : "MEDIUM";
+        for (var entry : grouped.entrySet()) {
+            String title = entry.getKey();
+            var items = entry.getValue();
 
+            // 该任务的整体时间范围取所有时间片的最早开始和最晚结束
+            LocalDateTime overallStart = null;
+            LocalDateTime overallEnd = null;
+            String priority = "MEDIUM";
+
+            for (PlanConfirmDTO.PlanItemInput item : items) {
+                LocalDateTime st = parseTime(item.getStartTime());
+                LocalDateTime et = parseTime(item.getEndTime());
+                if (overallStart == null || st.isBefore(overallStart)) overallStart = st;
+                if (overallEnd == null || et.isAfter(overallEnd)) overallEnd = et;
+                if (item.getPriority() != null) priority = item.getPriority();
+            }
+
+            // 创建一个 Task 覆盖所有时间片
             Task task = new Task();
             task.setUserId(userId);
-            task.setTitle(item.getTitle());
+            task.setTitle(title);
             task.setPriority(priorityToInt(priority));
             task.setStatus("TODO");
-            task.setStartTime(startTime);
-            task.setEndTime(endTime);
+            task.setStartTime(overallStart);
+            task.setEndTime(overallEnd);
             task.setSourceType("AI_GENERATED");
             taskService.create(task);
             taskCount++;
 
-            Schedule schedule = new Schedule();
-            schedule.setUserId(userId);
-            schedule.setTaskId(task.getId());
-            schedule.setTitle(item.getTitle());
-            schedule.setStartTime(startTime);
-            schedule.setEndTime(endTime);
-            schedule.setIsAllDay(0);
-            schedule.setStatus("ACTIVE");
-            scheduleService.create(schedule);
-            scheduleCount++;
+            // 每个时间片创建一个 Schedule + Reminder
+            for (PlanConfirmDTO.PlanItemInput item : items) {
+                LocalDateTime startTime = parseTime(item.getStartTime());
+                LocalDateTime endTime = parseTime(item.getEndTime());
 
-            Reminder reminder = new Reminder();
-            reminder.setUserId(userId);
-            reminder.setTaskId(task.getId());
-            reminder.setRemindTime(startTime.minusMinutes(30));
-            reminder.setRemindType("ONCE");
-            reminder.setChannel("IN_APP");
-            reminder.setMessage("任务「" + item.getTitle() + "」将在30分钟后开始");
-            reminder.setStatus("PENDING");
-            reminderService.create(reminder);
-            reminderCount++;
+                Schedule schedule = new Schedule();
+                schedule.setUserId(userId);
+                schedule.setTaskId(task.getId());
+                schedule.setTitle(title);
+                schedule.setStartTime(startTime);
+                schedule.setEndTime(endTime);
+                schedule.setIsAllDay(0);
+                schedule.setStatus("ACTIVE");
+                scheduleService.create(schedule);
+                scheduleCount++;
+
+                Reminder reminder = new Reminder();
+                reminder.setUserId(userId);
+                reminder.setTaskId(task.getId());
+                reminder.setRemindTime(startTime.minusMinutes(30));
+                reminder.setRemindType("ONCE");
+                reminder.setChannel("IN_APP");
+                reminder.setMessage("任务「" + title + "」将在30分钟后开始");
+                reminder.setStatus("PENDING");
+                reminderService.create(reminder);
+                reminderCount++;
+            }
         }
 
         log.info("Schedule confirmed: sessionId={}, tasks={}, schedules={}, reminders={}",

@@ -8,7 +8,9 @@ export const TOTAL_HOURS = END_HOUR - START_HOUR;
 /** 获取指定日期所在周的周一至周日 */
 export const getWeekDays = (date: Date | string): dayjs.Dayjs[] => {
   const d = dayjs(date);
-  const monday = d.startOf('week'); // zh-cn locale 下周一即为起点
+  // 显式计算周一：day() 0=周日, 往前推到周一
+  const offset = d.day() === 0 ? 6 : d.day() - 1;
+  const monday = d.subtract(offset, 'day');
   return Array.from({ length: 7 }, (_, i) => monday.add(i, 'day'));
 };
 

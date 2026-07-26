@@ -7,7 +7,7 @@ import DayView from '../../components/calendar/DayView';
 import TimeGrid from '../../components/calendar/TimeGrid';
 import { scheduleApi, type WeekScheduleVO, type CalendarItem } from '../../api/schedule';
 import { useAppStore } from '../../stores/useAppStore';
-import { formatWeekRange } from '../../utils/calendar';
+import { formatWeekRange, getWeekDays } from '../../utils/calendar';
 import dayjs from 'dayjs';
 
 type CalendarView = 'month' | 'week' | 'day';
@@ -29,11 +29,10 @@ const CalendarPanel: React.FC = () => {
   const [selectedDay, setSelectedDay] = useState<string>(currentDate.format('YYYY-MM-DD'));
 
   const weekBounds = useMemo(() => {
-    const monday = currentDate.startOf('week');
-    const sunday = monday.add(6, 'day');
+    const days = getWeekDays(currentDate);
     return {
-      weekStart: monday.format('YYYY-MM-DD'),
-      weekEnd: sunday.format('YYYY-MM-DD'),
+      weekStart: days[0].format('YYYY-MM-DD'),
+      weekEnd: days[6].format('YYYY-MM-DD'),
     };
   }, [currentDate]);
 
@@ -148,11 +147,10 @@ const CalendarPanel: React.FC = () => {
         <div style={{ display: 'flex', borderBottom: '2px solid #1677ff', margin: '0 16px' }}>
           <div style={{ width: 56, flexShrink: 0 }} />
           {(() => {
-            const monday = currentDate.startOf('week');
+            const days = getWeekDays(currentDate);
             const dayNames = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
             const today = dayjs().format('YYYY-MM-DD');
-            return Array.from({ length: 7 }, (_, i) => {
-              const d = monday.add(i, 'day');
+            return days.map((d, i) => {
               const isToday = d.format('YYYY-MM-DD') === today;
               return (
                 <div
@@ -195,10 +193,9 @@ const CalendarPanel: React.FC = () => {
           )}
           {currentView === 'week' && (
             <TimeGrid days={mergedDays.length > 0 ? mergedDays : (
-              Array.from({ length: 7 }, (_, i) => {
-                const d = currentDate.startOf('week').add(i, 'day');
-                return { date: d.format('YYYY-MM-DD'), dayOfWeek: '', items: [] };
-              })
+              getWeekDays(currentDate).map(d => ({
+                date: d.format('YYYY-MM-DD'), dayOfWeek: '', items: []
+              }))
             )} />
           )}
           {currentView === 'day' && (

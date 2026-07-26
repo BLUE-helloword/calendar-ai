@@ -50,7 +50,7 @@ public class LLMClient {
 
             body.set("messages", messages);
             body.set("temperature", 0.3);
-            body.set("max_tokens", 4096);
+            body.set("max_tokens", 2048);
 
             HttpEntity<String> request = new HttpEntity<>(body.toString(), headers);
             ResponseEntity<String> response = restTemplate.postForEntity(

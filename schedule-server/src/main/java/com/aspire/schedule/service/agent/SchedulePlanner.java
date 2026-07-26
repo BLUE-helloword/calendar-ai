@@ -40,7 +40,9 @@ public class SchedulePlanner {
         userMessage.append(parsedItems).append("\n\n");
 
         if (deadline != null && !deadline.isEmpty()) {
-            userMessage.append("## 截止时间\n").append(deadline).append("\n\n");
+            userMessage.append("## 截止日期\n")
+                    .append(deadline)
+                    .append("\n请将所有子任务安排在此日期当天的工作时间内，不得安排在当前日期之前。\n\n");
         }
 
         userMessage.append("## 已有日程（以下时间段不可用）\n");
@@ -129,13 +131,14 @@ public class SchedulePlanner {
         if (template != null) {
             return template.getContent();
         }
-        return "你是一个排期规划专家。根据子任务列表、已有日程和截止时间，为每个子任务推荐合理的执行时间片。\n"
-                + "## 规则\n"
-                + "1. 避开已有日程占用的时间\n"
-                + "2. 每天工作时间为 09:00-12:00 和 14:00-18:00\n"
-                + "3. 如果一个连续时间段不够，可将任务拆分为多个时间片\n"
-                + "4. 高优先级任务优先安排在较早的时间\n"
-                + "5. 子任务若存在依赖关系，前置任务必须先安排\n\n"
+        return "你是一个排期规划专家。根据子任务列表、已有日程和截止日期，为每个子任务推荐合理的执行时间片。\n"
+                + "## 核心规则（必须严格遵守）\n"
+                + "1. 所有任务必须安排在 **截止日期当天** 的工作时间内，不要安排在当前日期\n"
+                + "2. 避开已有日程占用的时间\n"
+                + "3. 每天工作时间为 09:00-12:00 和 14:00-18:00\n"
+                + "4. 如果一个连续时间段不够，可将任务拆分为多个时间片\n"
+                + "5. 高优先级任务优先安排在较早的时间\n"
+                + "6. 子任务若存在依赖关系，前置任务必须先安排\n\n"
                 + "## 输出格式（严格 JSON）\n"
                 + "{\n"
                 + "  \"plan\": [{\"taskTitle\":\"...\",\"suggestedStart\":\"yyyy-MM-ddTHH:mm:ss\","

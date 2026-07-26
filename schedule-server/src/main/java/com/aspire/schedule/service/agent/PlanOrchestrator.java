@@ -50,7 +50,7 @@ public class PlanOrchestrator {
         log.debug("Goal {} schedule planning: {} existing schedules in next 30 days", goalId, existingSchedules.size());
 
         String deadline = goal.getParsedDeadline() != null
-                ? goal.getParsedDeadline().toString()
+                ? goal.getParsedDeadline().toLocalDate().toString()
                 : null;
 
         // 调用排期 Agent

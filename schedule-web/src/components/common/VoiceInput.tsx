@@ -8,9 +8,10 @@ interface VoiceInputProps {
   onChange: (value: string) => void;
   placeholder?: string;
   disabled?: boolean;
+  onSubmit?: () => void;
 }
 
-const VoiceInput: React.FC<VoiceInputProps> = ({ value, onChange, placeholder, disabled }) => {
+const VoiceInput: React.FC<VoiceInputProps> = ({ value, onChange, placeholder, disabled, onSubmit }) => {
   const { isSupported, isListening, transcript, error, start, stop } = useSpeechRecognition();
 
   const handleVoiceToggle = () => {
@@ -39,9 +40,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ value, onChange, placeholder, d
         autoSize={{ minRows: 2, maxRows: 6 }}
         disabled={disabled}
         style={{ paddingRight: 80 }}
-        onPressEnter={(e) => {
-          // Let parent handle Enter key
-        }}
+        onPressEnter={() => onSubmit?.()}
       />
       {isSupported && (
         <Button

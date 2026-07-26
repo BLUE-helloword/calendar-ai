@@ -15,16 +15,13 @@ const AppLayout: React.FC = () => {
       <Sidebar />
       <Layout style={{ marginLeft: 220 }}>
         <HeaderBar />
-        <Content style={isWorkbench ? {
+        <Content style={{
+          margin: isWorkbench ? 0 : 24,
           background: '#fff',
-          height: 'calc(100vh - 64px)',
-          overflow: 'hidden',
-        } : {
-          margin: 24,
-          background: '#fff',
-          borderRadius: 8,
-          padding: 24,
-          minHeight: 'calc(100vh - 104px)',
+          borderRadius: isWorkbench ? 0 : 8,
+          padding: isWorkbench ? 0 : 24,
+          height: isWorkbench ? 'calc(100vh - 64px)' : 'calc(100vh - 64px)',
+          overflow: isWorkbench ? 'hidden' : 'auto',
         }}>
           <Outlet />
         </Content>

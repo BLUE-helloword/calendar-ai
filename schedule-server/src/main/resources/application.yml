@@ -36,7 +36,7 @@ jwt:
 llm:
   api-key: ${LLM_API_KEY:sk-6c1b62214fb34d1a9da1b887d8bc06a8}
   base-url: https://api.deepseek.com/v1
-  default-model: deepseek-v4-pro
+  default-model: deepseek-v4-flash
   timeout: 30000
 
 springdoc:

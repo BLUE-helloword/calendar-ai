@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button, Typography, Space, Empty } from 'antd';
 import { ClearOutlined, CheckOutlined, SendOutlined } from '@ant-design/icons';
 import ChatBubble from '../../components/chat/ChatBubble';
+import ThinkingBubble from '../../components/chat/ThinkingBubble';
 import VoiceInput from '../../components/common/VoiceInput';
 import { useAppStore } from '../../stores/useAppStore';
 
@@ -26,13 +27,6 @@ const ChatPanel: React.FC = () => {
     if (!text || isProcessing) return;
     sendMessage(text);
     setInputValue('');
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
   };
 
   return (
@@ -74,7 +68,7 @@ const ChatPanel: React.FC = () => {
           />
         ))}
         {isProcessing && (
-          <ChatBubble role="agent" content="思考中..." />
+          <ThinkingBubble />
         )}
         <div ref={bottomRef} />
       </div>
@@ -103,6 +97,7 @@ const ChatPanel: React.FC = () => {
               onChange={setInputValue}
               placeholder="描述你想安排的事项..."
               disabled={isProcessing}
+              onSubmit={handleSend}
             />
           </div>
           <Button
