@@ -192,7 +192,12 @@ const CalendarPanel: React.FC = () => {
       )}
 
       {/* Calendar content */}
-      <div style={{ flex: 1, overflow: 'auto' }}>
+      <div style={{ flex: 1, overflowY: 'scroll', overflowX: 'auto' }}
+        onWheel={(e) => {
+          const el = e.currentTarget;
+          el.scrollTop += e.deltaY;
+          e.preventDefault();
+        }}>
         <Spin spinning={loading}>
           {currentView === 'month' && (
             <MonthView

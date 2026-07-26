@@ -11,7 +11,7 @@ const AppLayout: React.FC = () => {
   const isWorkbench = location.pathname === '/';
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ minHeight: '100vh', overflow: 'hidden' }}>
       <Sidebar />
       <Layout style={{ marginLeft: 220 }}>
         <HeaderBar />
