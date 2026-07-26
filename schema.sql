@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS goal (
     clarify_round   INT DEFAULT 0 COMMENT '当前追问轮次',
     schedule_round  INT DEFAULT 0 COMMENT '当前排期轮次',
     partial_result  JSON COMMENT '部分解析结果(追问过程中暂存)',
-    conversation    JSON COMMENT '对话历史JSON',
+    conversation    TEXT COMMENT '对话历史',
     created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_user_id (user_id),

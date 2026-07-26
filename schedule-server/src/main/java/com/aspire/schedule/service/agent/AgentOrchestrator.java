@@ -42,7 +42,16 @@ public class AgentOrchestrator {
         log.info("Agent parse round {}: userInput={}, confidence={}, missingInfo={}",
                 currentRound + 1, userInput, result.getConfidence(), result.getMissingInfo());
 
-        // 3. 检查是否需要追问
+        // 3. 检查是否为 API 错误（不可恢复，不要进入追问循环）
+        if (result.getConfidence() == 0.0
+                && result.getMissingInfo() != null
+                && !result.getMissingInfo().isEmpty()
+                && result.getMissingInfo().get(0).contains("AI 服务暂时不可用")) {
+            log.warn("Goal {} API unavailable, returning error directly", goalId);
+            return ParseResult.needsClarification(goalId, result, result.getMissingInfo());
+        }
+
+        // 4. 检查是否需要追问
         boolean needsClarification =
                 result.getConfidence() < CONFIDENCE_THRESHOLD
                 || (result.getMissingInfo() != null && !result.getMissingInfo().isEmpty())

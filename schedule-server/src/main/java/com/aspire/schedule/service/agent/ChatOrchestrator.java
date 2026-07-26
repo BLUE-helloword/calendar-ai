@@ -70,14 +70,25 @@ public class ChatOrchestrator {
         ParseResult result = agentOrchestrator.processOneRound(
                 goal.getId(), message, null, userId);
 
+        // API 错误：直接返回错误提示，不进入追问循环
+        if (isApiError(result)) {
+            return buildTextResponse(goal.getId(),
+                    "AI 服务暂时不可用，请检查 LLM API Key 配置。\n\n" +
+                    "请在环境变量中设置: export LLM_API_KEY=your-deepseek-api-key\n" +
+                    "或在 application.yml 的 llm.api-key 中配置。");
+        }
+
         if (result.isNeedsClarification()) {
             return buildClarifyResponse(goal.getId(), result);
         }
 
-        // 解析完成，自动进入排期
-        goalService.updateStatus(goal.getId(), "PARSED");
+        // 解析完成，保存解析结果并自动进入排期
+        saveParsedResult(goal.getId(), result);
         PlanVO planVO = planOrchestrator.processPlanRound(goal.getId(), null, userId);
-        return buildScheduleCardResponse(goal.getId(), planVO, goal.getParsedTarget());
+        // 重新获取 goal 以获取 parsedTarget（排期后已更新）
+        Goal updatedGoal = goalService.findById(goal.getId());
+        String displayTitle = updatedGoal != null ? updatedGoal.getParsedTarget() : null;
+        return buildScheduleCardResponse(goal.getId(), planVO, displayTitle);
     }
 
     private ChatResponseVO handleExistingConversation(Goal goal, String message, Long userId) {
@@ -127,14 +138,24 @@ public class ChatOrchestrator {
         ParseResult result = agentOrchestrator.processOneRound(
                 goal.getId(), message, history, userId);
 
+        // API 错误：直接返回错误提示，不进入追问循环
+        if (isApiError(result)) {
+            return buildTextResponse(goal.getId(),
+                    "AI 服务暂时不可用，请检查 LLM API Key 配置。\n\n" +
+                    "请在环境变量中设置: export LLM_API_KEY=your-deepseek-api-key\n" +
+                    "或在 application.yml 的 llm.api-key 中配置。");
+        }
+
         if (result.isNeedsClarification()) {
             return buildClarifyResponse(goal.getId(), result);
         }
 
-        // 解析完成，自动进入排期
-        goalService.updateStatus(goal.getId(), "PARSED");
+        // 解析完成，保存解析结果并自动进入排期
+        saveParsedResult(goal.getId(), result);
         PlanVO planVO = planOrchestrator.processPlanRound(goal.getId(), null, userId);
-        return buildScheduleCardResponse(goal.getId(), planVO, goal.getParsedTarget());
+        Goal updatedGoal = goalService.findById(goal.getId());
+        String displayTitle = updatedGoal != null ? updatedGoal.getParsedTarget() : null;
+        return buildScheduleCardResponse(goal.getId(), planVO, displayTitle);
     }
 
     private ChatResponseVO handleRefinement(Goal goal, String message, Long userId) {
@@ -251,5 +272,31 @@ public class ChatOrchestrator {
         if (message == null) return false;
         String trimmed = message.trim();
         return CONFIRM_PATTERN.matcher(trimmed).matches();
+    }
+
+    private void saveParsedResult(Long goalId, ParseResult result) {
+        java.time.LocalDateTime deadline = null;
+        if (result.getParsedDeadline() != null && !result.getParsedDeadline().isEmpty()) {
+            try {
+                String ds = result.getParsedDeadline().replace("T", " ").replace("Z", "");
+                // Handle various date formats
+                if (ds.length() == 10) ds += " 23:59:59";
+                deadline = java.time.LocalDateTime.parse(ds,
+                        java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            } catch (Exception e) {
+                log.warn("Failed to parse deadline: {}", result.getParsedDeadline());
+            }
+        }
+        goalService.updateParsedResult(goalId,
+                result.getParsedTarget(), deadline, result.getParsedItems());
+        goalService.updateStatus(goalId, "PARSED");
+    }
+
+    private boolean isApiError(ParseResult result) {
+        if (result == null) return false;
+        if (result.getConfidence() > 0.0) return false;
+        List<String> missing = result.getMissingInfo();
+        if (missing == null || missing.isEmpty()) return false;
+        return missing.get(0).contains("AI 服务暂时不可用");
     }
 }

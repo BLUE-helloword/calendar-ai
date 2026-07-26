@@ -39,7 +39,7 @@ public class IntentParser {
             log.warn("Intent parse failed: {}", response.getErrorMsg());
             ParseResult fallback = new ParseResult();
             fallback.setConfidence(0.0);
-            fallback.getMissingInfo().add("系统暂无法理解您的输入，请重新描述");
+            fallback.getMissingInfo().add("AI 服务暂时不可用（LLM API 调用失败），请检查 API Key 配置是否正确。错误信息: " + response.getErrorMsg());
             return fallback;
         }
 
