@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Card, Input, Button, Typography, Alert, Descriptions, Table, Space, Progress, message } from 'antd';
+import { Card, Button, Typography, Alert, Descriptions, Table, Space, Progress, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useGoalParser } from '../../hooks/useGoalParser';
 import StepProgress from '../../components/common/StepProgress';
 import LoadingSkeleton from '../../components/common/LoadingSkeleton';
+import VoiceInput from '../../components/common/VoiceInput';
 import type { ColumnsType } from 'antd/es/table';
 
 interface ParsedItem {
@@ -41,11 +42,10 @@ const GoalNewPage: React.FC = () => {
       <StepProgress current={0} steps={['输入目标', '确认解析', '查看排期']} />
 
       <Card title="输入目标">
-        <Input.TextArea
+        <VoiceInput
           value={rawInput}
-          onChange={(e) => setRawInput(e.target.value)}
+          onChange={setRawInput}
           placeholder="用自然语言描述你的目标，例如：帮我安排下周五前完成新人培训汇报，包括材料整理、PPT初稿、评审修改和最终彩排"
-          autoSize={{ minRows: 4, maxRows: 8 }}
           disabled={loading}
         />
         <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
