@@ -23,10 +23,18 @@ public class LLMClient {
      * 向 LLM 发送请求
      */
     public LLMResponse chat(String systemPrompt, String userMessage) {
-        return chat(systemPrompt, userMessage, config.getDefaultModel());
+        return chat(systemPrompt, userMessage, config.getDefaultModel(), 2048);
     }
 
     public LLMResponse chat(String systemPrompt, String userMessage, String model) {
+        return chat(systemPrompt, userMessage, model, 2048);
+    }
+
+    public LLMResponse chat(String systemPrompt, String userMessage, int maxTokens) {
+        return chat(systemPrompt, userMessage, config.getDefaultModel(), maxTokens);
+    }
+
+    public LLMResponse chat(String systemPrompt, String userMessage, String model, int maxTokens) {
         long start = System.currentTimeMillis();
 
         try {
@@ -50,7 +58,10 @@ public class LLMClient {
 
             body.set("messages", messages);
             body.set("temperature", 0.3);
-            body.set("max_tokens", 2048);
+            body.set("max_tokens", maxTokens);
+
+            log.info(">>> LLM REQUEST [{}] >>>\n--- SYSTEM ---\n{}\n--- USER ---\n{}",
+                    model, systemPrompt, userMessage);
 
             HttpEntity<String> request = new HttpEntity<>(body.toString(), headers);
             ResponseEntity<String> response = restTemplate.postForEntity(
@@ -58,12 +69,17 @@ public class LLMClient {
 
             long latencyMs = System.currentTimeMillis() - start;
 
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                JSONObject respJson = JSONUtil.parseObj(response.getBody());
+            String responseBody = response.getBody();
+            if (response.getStatusCode().is2xxSuccessful() && responseBody != null) {
+                JSONObject respJson = JSONUtil.parseObj(responseBody);
                 JSONArray choices = respJson.getJSONArray("choices");
                 String content = choices.getJSONObject(0)
                         .getJSONObject("message")
                         .getStr("content");
+
+                log.info("<<< LLM RESPONSE [{}] <<< latency={}ms, length={}\n{}",
+                        model, System.currentTimeMillis() - start,
+                        content != null ? content.length() : 0, content);
 
                 int tokens = 0;
                 JSONObject usage = respJson.getJSONObject("usage");
@@ -78,7 +94,7 @@ public class LLMClient {
                 return LLMResponse.success(content, tokens, latencyMs);
             }
 
-            log.error("LLM call failed, status={}", response.getStatusCode());
+            log.error("LLM call failed, status={}, body={}", response.getStatusCode(), responseBody);
             return LLMResponse.fail("HTTP " + response.getStatusCodeValue());
 
         } catch (Exception e) {

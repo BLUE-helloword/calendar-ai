@@ -33,6 +33,10 @@ public class ScheduleService {
                         .le(Schedule::getEndTime, end));
     }
 
+    public void deleteByTaskId(Long taskId) {
+        scheduleMapper.delete(new LambdaQueryWrapper<Schedule>().eq(Schedule::getTaskId, taskId));
+    }
+
     public List<Schedule> findByUserId(Long userId) {
         return scheduleMapper.selectList(
                 new LambdaQueryWrapper<Schedule>()

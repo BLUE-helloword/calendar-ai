@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { calcPosition } from '../../utils/calendar';
 import type { CalendarItem } from '../../api/schedule';
 
@@ -9,6 +10,7 @@ interface Props {
 }
 
 const ScheduleBlock: React.FC<Props> = ({ item, width, left }) => {
+  const navigate = useNavigate();
   const { top, height } = calcPosition(item.startTime, item.endTime);
   if (top < -10 || top + height < 0) return null;
 
@@ -16,6 +18,10 @@ const ScheduleBlock: React.FC<Props> = ({ item, width, left }) => {
 
   return (
     <div
+      onClick={() => {
+        const targetId = item.type === 'SCHEDULE' ? item.taskId : item.id;
+        if (targetId) navigate(`/tasks/${targetId}`);
+      }}
       title={`${item.title}\n${item.startTime} ~ ${item.endTime}${isPreview ? '\n(AI 预览)' : ''}`}
       style={{
         position: 'absolute',
@@ -30,7 +36,7 @@ const ScheduleBlock: React.FC<Props> = ({ item, width, left }) => {
         fontSize: 11,
         color: isPreview ? (item.color || '#1677ff') : '#fff',
         overflow: 'hidden',
-        cursor: 'default',
+        cursor: 'pointer',
         border: isPreview ? `2px dashed ${item.color}` : '1px solid rgba(255,255,255,0.2)',
         boxSizing: 'border-box',
         zIndex: isPreview ? 2 : 1,

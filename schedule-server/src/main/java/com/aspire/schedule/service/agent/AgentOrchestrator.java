@@ -56,10 +56,10 @@ public class AgentOrchestrator {
         }
 
         // 4. 检查是否需要追问
+        // 仅当 LLM 自身认为信息不足时才追问，不强制要求 deadline
         boolean needsClarification =
                 result.getConfidence() < CONFIDENCE_THRESHOLD
-                || (result.getMissingInfo() != null && !result.getMissingInfo().isEmpty())
-                || result.getParsedDeadline() == null;
+                || (result.getMissingInfo() != null && !result.getMissingInfo().isEmpty());
 
         if (needsClarification) {
             goalService.updateStatus(goalId, "CLARIFYING");

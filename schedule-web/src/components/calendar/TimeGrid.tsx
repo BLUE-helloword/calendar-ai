@@ -23,20 +23,28 @@ const TimeGrid: React.FC<Props> = ({ days }) => {
   // Detect overlaps and compute width
   const computeLayout = (items: DaySchedule['items']) => {
     if (items.length === 0) return [];
-    const result = items.map((item, idx) => {
-      let hasOverlap = false;
-      for (let j = 0; j < items.length; j++) {
-        if (j === idx) continue;
-        const a = item.startTime, b = item.endTime;
-        const c = items[j].startTime, d = items[j].endTime;
-        if (a < d && b > c) { hasOverlap = true; break; }
+    // 按开始时间排序
+    const sorted = [...items].sort((a, b) => a.startTime.localeCompare(b.startTime));
+    // columns[i] = 该列最后一个项的结束时间
+    const columns: string[] = [];
+    const result: any[] = [];
+
+    for (const item of sorted) {
+      // 找第一个空闲的列（该列的最后一个项已结束）
+      let col = columns.findIndex(end => end <= item.startTime);
+      if (col === -1) {
+        col = columns.length;
+        columns.push(item.endTime);
+      } else {
+        columns[col] = item.endTime;
       }
-      return {
+      const totalCols = columns.length;
+      result.push({
         ...item,
-        _width: hasOverlap ? 48 : 96,
-        _left: idx % 2 === 0 || !hasOverlap ? 0 : 50,
-      };
-    });
+        _width: Math.floor(90 / totalCols),
+        _left: Math.floor(col * 90 / totalCols),
+      });
+    }
     return result;
   };
 

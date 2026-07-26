@@ -28,5 +28,6 @@ public class WeekScheduleVO {
         private String color;
         private String status;
         private Integer priority;
+        private Long taskId;
     }
 }

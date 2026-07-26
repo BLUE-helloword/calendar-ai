@@ -21,6 +21,7 @@ export interface CalendarItem {
   color: string;
   status: string;
   priority?: number;
+  taskId?: number;
 }
 
 export const scheduleApi = {

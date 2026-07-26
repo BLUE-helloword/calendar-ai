@@ -64,7 +64,7 @@ public class SchedulePlanner {
 
         log.info("SchedulePlanner calling LLM, userMessage length={}", userMessage.length());
 
-        LLMResponse response = llmClient.chat(systemPrompt, userMessage.toString());
+        LLMResponse response = llmClient.chat(systemPrompt, userMessage.toString(), 4096);
 
         if (!response.isSuccess()) {
             log.warn("Schedule plan failed: {}", response.getErrorMsg());

@@ -1,6 +1,7 @@
 package com.aspire.schedule.service;
 
 import com.aspire.schedule.model.enums.TaskStatus;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.aspire.schedule.repository.entity.Task;
 import com.aspire.schedule.repository.mapper.TaskMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -15,6 +16,8 @@ import java.util.List;
 public class TaskService {
 
     private final TaskMapper taskMapper;
+    private final ScheduleService scheduleService;
+    private final ReminderService reminderService;
 
     public Task create(Task task) {
         taskMapper.insert(task);
@@ -34,6 +37,9 @@ public class TaskService {
     }
 
     public void delete(Long id) {
+        // 级联删除关联的日程和提醒
+        scheduleService.deleteByTaskId(id);
+        reminderService.deleteByTaskId(id);
         taskMapper.deleteById(id);
     }
 

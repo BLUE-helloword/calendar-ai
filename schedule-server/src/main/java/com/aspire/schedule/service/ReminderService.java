@@ -29,6 +29,10 @@ public class ReminderService {
         return reminder;
     }
 
+    public void deleteByTaskId(Long taskId) {
+        reminderMapper.delete(new LambdaQueryWrapper<Reminder>().eq(Reminder::getTaskId, taskId));
+    }
+
     public void delete(Long id) {
         reminderMapper.deleteById(id);
     }

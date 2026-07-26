@@ -99,13 +99,22 @@ public class ScheduleController {
                     item.setEndTime(s.getEndTime().format(DATETIME_FMT));
                     item.setColor(s.getColor() != null ? s.getColor() : "#1677ff");
                     item.setStatus(s.getStatus());
+                    item.setTaskId(s.getTaskId());
                     items.add(item);
                 }
             }
 
-            // 该日的任务
+            // 收集本日 schedule 关联的 taskId，用于去重
+            java.util.Set<Long> scheduleTaskIds = new java.util.HashSet<>();
+            for (Schedule s : schedules) {
+                if (isSameDay(s.getStartTime(), day) && s.getTaskId() != null) {
+                    scheduleTaskIds.add(s.getTaskId());
+                }
+            }
+
+            // 该日的任务（跳过已有对应 Schedule 的，避免重复）
             for (Task t : tasks) {
-                if (isSameDay(t.getStartTime(), day)) {
+                if (isSameDay(t.getStartTime(), day) && !scheduleTaskIds.contains(t.getId())) {
                     WeekScheduleVO.CalendarItem item = new WeekScheduleVO.CalendarItem();
                     item.setId(t.getId());
                     item.setType("TASK");

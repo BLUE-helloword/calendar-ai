@@ -63,7 +63,7 @@ const TaskDetailPage: React.FC = () => {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
-        <Button icon={<ArrowLeftOutlined />} type="text" onClick={() => navigate('/tasks')} />
+        <Button icon={<ArrowLeftOutlined />} type="text" onClick={() => navigate(-1)} />
         <Typography.Title level={4} style={{ margin: 0 }}>{task.title}</Typography.Title>
         <StatusTag status={task.status} />
       </div>
