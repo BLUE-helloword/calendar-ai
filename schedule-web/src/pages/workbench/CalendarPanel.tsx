@@ -41,6 +41,8 @@ const CalendarPanel: React.FC = () => {
     try {
       const res = await scheduleApi.getWeek(date);
       setData(res);
+    } catch (e) {
+      console.error('[CalendarPanel] fetchWeek error:', e);
     } finally {
       setLoading(false);
     }
@@ -81,11 +83,21 @@ const CalendarPanel: React.FC = () => {
 
   const handlePrev = () => {
     if (currentView === 'month') goToPrevMonth();
+    else if (currentView === 'day') {
+      const prev = currentDate.subtract(1, 'day');
+      setCurrentDate(prev);
+      setSelectedDay(prev.format('YYYY-MM-DD'));
+    }
     else goToPrevWeek();
   };
 
   const handleNext = () => {
     if (currentView === 'month') goToNextMonth();
+    else if (currentView === 'day') {
+      const next = currentDate.add(1, 'day');
+      setCurrentDate(next);
+      setSelectedDay(next.format('YYYY-MM-DD'));
+    }
     else goToNextWeek();
   };
 

@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { calcPosition } from '../../utils/calendar';
 import type { CalendarItem } from '../../api/schedule';
 
@@ -10,38 +9,28 @@ interface Props {
 }
 
 const ScheduleBlock: React.FC<Props> = ({ item, width, left }) => {
-  const navigate = useNavigate();
   const { top, height } = calcPosition(item.startTime, item.endTime);
-
-  // 超出显示范围的日程截断提示
   if (top < -10 || top + height < 0) return null;
-
-  const handleClick = () => {
-    if (item.type === 'TASK') {
-      navigate(`/tasks/${item.id}`);
-    }
-  };
 
   const isPreview = item.status === 'PREVIEW';
 
   return (
     <div
-      onClick={handleClick}
       title={`${item.title}\n${item.startTime} ~ ${item.endTime}${isPreview ? '\n(AI 预览)' : ''}`}
       style={{
         position: 'absolute',
         top,
-        height,
+        height: Math.max(height, 20),
         left: `${left}%`,
         width: `${width}%`,
         padding: '2px 4px',
-        backgroundColor: isPreview ? 'transparent' : item.color,
+        backgroundColor: isPreview ? 'transparent' : (item.color || '#1677ff'),
         opacity: item.status === 'DONE' ? 0.5 : 0.85,
         borderRadius: 4,
         fontSize: 11,
-        color: isPreview ? item.color : '#fff',
+        color: isPreview ? (item.color || '#1677ff') : '#fff',
         overflow: 'hidden',
-        cursor: item.type === 'TASK' || isPreview ? 'pointer' : 'default',
+        cursor: 'default',
         border: isPreview ? `2px dashed ${item.color}` : '1px solid rgba(255,255,255,0.2)',
         boxSizing: 'border-box',
         zIndex: isPreview ? 2 : 1,

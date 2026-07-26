@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +25,7 @@ import java.util.Comparator;
 import java.util.List;
 
 @Tag(name = "日程周历")
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/schedules")
 @RequiredArgsConstructor
@@ -130,6 +132,9 @@ public class ScheduleController {
         }
 
         vo.setDays(days);
+        int totalItems = days.stream().mapToInt(d -> d.getItems().size()).sum();
+        log.info("WeekView returning: weekStart={}, weekEnd={}, totalDays={}, totalItems={}",
+                vo.getWeekStart(), vo.getWeekEnd(), days.size(), totalItems);
         return ApiResponse.ok(vo);
     }
 

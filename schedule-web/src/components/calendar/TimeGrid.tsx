@@ -43,6 +43,7 @@ const TimeGrid: React.FC<Props> = ({ days }) => {
   return (
     <div style={{ display: 'flex', overflowX: 'auto', paddingTop: 0 }}>
       <HourLabels />
+
       <div style={{ display: 'flex', flex: 1, position: 'relative', minWidth: 700 }}>
         {days.map((day, di) => (
           <div
