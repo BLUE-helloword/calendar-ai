@@ -67,6 +67,24 @@ public class GoalService {
         goalMapper.updateById(goal);
     }
 
+    public void incrementScheduleRound(Long id) {
+        Goal goal = goalMapper.selectById(id);
+        if (goal != null) {
+            Goal update = new Goal();
+            update.setId(id);
+            update.setScheduleRound(
+                    goal.getScheduleRound() != null ? goal.getScheduleRound() + 1 : 1);
+            goalMapper.updateById(update);
+        }
+    }
+
+    public void saveConversation(Long id, String conversation) {
+        Goal goal = new Goal();
+        goal.setId(id);
+        goal.setConversation(conversation);
+        goalMapper.updateById(goal);
+    }
+
     public Goal findById(Long id) {
         return goalMapper.selectById(id);
     }

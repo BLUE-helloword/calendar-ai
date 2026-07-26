@@ -20,6 +20,7 @@ public class Goal {
     private String parsedItems;
     private String status;
     private Integer clarifyRound;
+    private Integer scheduleRound;
     private String partialResult;
     private String conversation;
     private LocalDateTime createdAt;

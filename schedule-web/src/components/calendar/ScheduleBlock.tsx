@@ -22,10 +22,12 @@ const ScheduleBlock: React.FC<Props> = ({ item, width, left }) => {
     }
   };
 
+  const isPreview = item.status === 'PREVIEW';
+
   return (
     <div
       onClick={handleClick}
-      title={`${item.title}\n${item.startTime} ~ ${item.endTime}`}
+      title={`${item.title}\n${item.startTime} ~ ${item.endTime}${isPreview ? '\n(AI 预览)' : ''}`}
       style={{
         position: 'absolute',
         top,
@@ -33,16 +35,16 @@ const ScheduleBlock: React.FC<Props> = ({ item, width, left }) => {
         left: `${left}%`,
         width: `${width}%`,
         padding: '2px 4px',
-        backgroundColor: item.color,
+        backgroundColor: isPreview ? 'transparent' : item.color,
         opacity: item.status === 'DONE' ? 0.5 : 0.85,
         borderRadius: 4,
         fontSize: 11,
-        color: '#fff',
+        color: isPreview ? item.color : '#fff',
         overflow: 'hidden',
-        cursor: item.type === 'TASK' ? 'pointer' : 'default',
-        border: '1px solid rgba(255,255,255,0.2)',
+        cursor: item.type === 'TASK' || isPreview ? 'pointer' : 'default',
+        border: isPreview ? `2px dashed ${item.color}` : '1px solid rgba(255,255,255,0.2)',
         boxSizing: 'border-box',
-        zIndex: 1,
+        zIndex: isPreview ? 2 : 1,
         lineHeight: 1.3,
       }}
     >

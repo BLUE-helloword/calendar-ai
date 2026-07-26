@@ -2,6 +2,9 @@ export interface PlanVO {
   goalId: number;
   parsedTarget: string;
   planItems: PlanItem[];
+  warnings?: string[];
+  currentScheduleRound: number;
+  maxScheduleRounds: number;
 }
 
 export interface PlanItem {
@@ -23,4 +26,8 @@ export interface PlanItemInput {
   startTime: string;
   endTime: string;
   priority?: string;
+}
+
+export interface PlanRefineDTO {
+  feedback: string;
 }

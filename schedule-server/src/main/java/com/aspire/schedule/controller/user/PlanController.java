@@ -5,6 +5,7 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.aspire.schedule.common.response.ApiResponse;
 import com.aspire.schedule.model.dto.PlanConfirmDTO;
+import com.aspire.schedule.model.dto.PlanRefineDTO;
 import com.aspire.schedule.model.vo.PlanVO;
 import com.aspire.schedule.repository.entity.Goal;
 import com.aspire.schedule.repository.entity.Reminder;
@@ -15,6 +16,7 @@ import com.aspire.schedule.service.GoalService;
 import com.aspire.schedule.service.ReminderService;
 import com.aspire.schedule.service.ScheduleService;
 import com.aspire.schedule.service.TaskService;
+import com.aspire.schedule.service.agent.PlanOrchestrator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,6 +41,7 @@ public class PlanController {
     private final ScheduleService scheduleService;
     private final ReminderService reminderService;
     private final GoalService goalService;
+    private final PlanOrchestrator planOrchestrator;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -63,6 +66,39 @@ public class PlanController {
     public ApiResponse<PlanVO> preview(@PathVariable Long id, HttpServletRequest request) {
         Long userId = getUserId(request);
         return ApiResponse.ok(buildPlan(id, userId));
+    }
+
+    @Operation(summary = "AI智能排期（首次调用）")
+    @PostMapping("/{id}/plan/optimize")
+    public ApiResponse<PlanVO> optimize(@PathVariable Long id, HttpServletRequest request) {
+        Long userId = getUserId(request);
+        PlanVO vo = planOrchestrator.processPlanRound(id, null, userId);
+        return ApiResponse.ok(vo);
+    }
+
+    @Operation(summary = "排期多轮调整（用户反馈）")
+    @PostMapping("/{id}/plan/refine")
+    public ApiResponse<PlanVO> refine(@PathVariable Long id,
+                                       @RequestBody @Valid PlanRefineDTO dto,
+                                       HttpServletRequest request) {
+        Long userId = getUserId(request);
+        PlanVO vo = planOrchestrator.processPlanRound(id, dto.getFeedback(), userId);
+        return ApiResponse.ok(vo);
+    }
+
+    @Operation(summary = "查看排期状态")
+    @GetMapping("/{id}/plan/plan-status")
+    public ApiResponse<PlanVO> planStatus(@PathVariable Long id) {
+        Goal goal = goalService.findById(id);
+        if (goal == null) {
+            return ApiResponse.fail(404, "目标不存在");
+        }
+        // 返回已有排期（从 partialResult 读取）
+        PlanVO vo = new PlanVO();
+        vo.setGoalId(id);
+        vo.setParsedTarget(goal.getParsedTarget());
+        vo.setCurrentScheduleRound(goal.getScheduleRound() != null ? goal.getScheduleRound() : 0);
+        return ApiResponse.ok(vo);
     }
 
     @Operation(summary = "确认排期计划")

@@ -1,5 +1,5 @@
 import React from 'react';
-import { HOUR_HEIGHT, TOTAL_HOURS } from '../../utils/calendar';
+import { HOUR_HEIGHT, START_HOUR, TOTAL_HOURS } from '../../utils/calendar';
 import HourLabels from './HourLabels';
 import ScheduleBlock from './ScheduleBlock';
 import type { DaySchedule } from '../../api/schedule';
@@ -11,10 +11,18 @@ interface Props {
 const TimeGrid: React.FC<Props> = ({ days }) => {
   const gridHeight = TOTAL_HOURS * HOUR_HEIGHT;
 
-  // 检测重叠并计算宽度位置
+  // Current time red line
+  const now = new Date();
+  const nowHour = now.getHours() + now.getMinutes() / 60;
+  const todayStr = now.toISOString().slice(0, 10);
+  const nowTop = (nowHour - START_HOUR) * HOUR_HEIGHT;
+
+  // Detect which column is today
+  const todayColIndex = days.findIndex((d) => d.date === todayStr);
+
+  // Detect overlaps and compute width
   const computeLayout = (items: DaySchedule['items']) => {
     if (items.length === 0) return [];
-    // 简化处理：按时间分组，最多2列
     const result = items.map((item, idx) => {
       let hasOverlap = false;
       for (let j = 0; j < items.length; j++) {
@@ -48,7 +56,7 @@ const TimeGrid: React.FC<Props> = ({ days }) => {
               backgroundColor: di >= 5 ? '#fafafa' : 'transparent',
             }}
           >
-            {/* 小时刻度线 */}
+            {/* Hour grid lines */}
             {Array.from({ length: TOTAL_HOURS + 1 }, (_, i) => (
               <div
                 key={i}
@@ -61,7 +69,30 @@ const TimeGrid: React.FC<Props> = ({ days }) => {
                 }}
               />
             ))}
-            {/* 日程块 */}
+
+            {/* Current time red line */}
+            {di === todayColIndex && nowTop >= 0 && nowTop <= gridHeight && (
+              <div style={{
+                position: 'absolute',
+                top: nowTop,
+                left: 0,
+                right: 0,
+                height: 2,
+                backgroundColor: '#ff4d4f',
+                zIndex: 10,
+              }}>
+                <div style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  backgroundColor: '#ff4d4f',
+                  marginTop: -3,
+                  marginLeft: -4,
+                }} />
+              </div>
+            )}
+
+            {/* Schedule blocks */}
             {computeLayout(day.items).map((item: any, idx) => (
               <ScheduleBlock
                 key={idx}

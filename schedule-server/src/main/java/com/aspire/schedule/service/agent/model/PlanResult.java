@@ -9,7 +9,7 @@ public class PlanResult {
 
     private Long goalId;
     private List<PlanItem> plan;
-    private List<Conflict> conflicts;
+    private List<String> conflicts;
     private List<String> warnings;
 
     @Data

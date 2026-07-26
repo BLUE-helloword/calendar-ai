@@ -6,8 +6,15 @@ import dayjs from 'dayjs';
 import { planApi } from '../../api/plan';
 import StepProgress from '../../components/common/StepProgress';
 import PriorityTag from '../../components/common/PriorityTag';
+import ChatBubble from '../../components/chat/ChatBubble';
+import ChatInput from '../../components/chat/ChatInput';
 import type { PlanVO, PlanItem, PlanItemInput } from '../../types/plan';
 import type { ColumnsType } from 'antd/es/table';
+
+interface ChatMessage {
+  role: 'user' | 'agent';
+  content: string;
+}
 
 const PlanPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -15,22 +22,57 @@ const PlanPage: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
+  const [sending, setSending] = useState(false);
   const [plan, setPlan] = useState<PlanVO | null>(null);
   const [editItem, setEditItem] = useState<PlanItem | null>(null);
   const [editStart, setEditStart] = useState<dayjs.Dayjs | null>(null);
   const [editEnd, setEditEnd] = useState<dayjs.Dayjs | null>(null);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
   const fetchPlan = async () => {
     setLoading(true);
     try {
-      const res = await planApi.generate(goalId);
+      const res = await planApi.optimize(goalId);
       setPlan(res);
+      // 首次展示AI排期消息
+      const summary = buildPlanSummary(res);
+      setChatMessages([{ role: 'agent', content: summary }]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => { fetchPlan(); }, [goalId]);
+
+  const buildPlanSummary = (p: PlanVO): string => {
+    if (!p.planItems || p.planItems.length === 0) {
+      return '排期方案生成失败，请重试。';
+    }
+    const lines = p.planItems.map(
+      (item, i) =>
+        `${i + 1}. ${item.title} — ${item.startTime} ~ ${item.endTime} [${item.priority}]`
+    );
+    let text = `已为您生成排期方案（第 ${p.currentScheduleRound}/${p.maxScheduleRounds} 轮）：\n\n${lines.join('\n')}`;
+    if (p.warnings && p.warnings.length > 0) {
+      text += `\n\n⚠️ 风险提醒：\n${p.warnings.map((w) => '  - ' + w).join('\n')}`;
+    }
+    text += '\n\n如果有任何不满意的地方，可以直接说明，我会为您调整排期方案。';
+    return text;
+  };
+
+  const handleSendFeedback = async (text: string) => {
+    const newMessages = [...chatMessages, { role: 'user' as const, content: text }];
+    setChatMessages(newMessages);
+    setSending(true);
+    try {
+      const res = await planApi.refine(goalId, { feedback: text });
+      setPlan(res);
+      const response = buildPlanSummary(res);
+      setChatMessages([...newMessages, { role: 'agent', content: response }]);
+    } finally {
+      setSending(false);
+    }
+  };
 
   const handleConfirm = async () => {
     if (!plan) return;
@@ -42,7 +84,7 @@ const PlanPage: React.FC = () => {
     }));
     Modal.confirm({
       title: '确认排期',
-      content: `将创建 ${items.length} 个任务、${items.length} 个日程、${items.length} 个提醒，是否继续？`,
+      content: `将创建 ${items.length} 个任务及其关联的日程和提醒，是否继续？`,
       onOk: async () => {
         setConfirming(true);
         try {
@@ -68,7 +110,7 @@ const PlanPage: React.FC = () => {
       return {
         ...prev,
         planItems: prev.planItems.map(i =>
-          i.title === editItem.title
+          i.title === editItem.title && i.startTime === editItem.startTime
             ? { ...i, startTime: editStart.format('YYYY-MM-DD HH:mm:ss'), endTime: editEnd.format('YYYY-MM-DD HH:mm:ss') }
             : i
         ),
@@ -112,7 +154,7 @@ const PlanPage: React.FC = () => {
     <div>
       <StepProgress current={2} steps={['输入目标', '确认解析', '查看排期并确认']} />
 
-      {loading && <Card><Typography.Text>正在生成排期方案...</Typography.Text></Card>}
+      {loading && <Card><Typography.Text>AI 正在生成排期方案...</Typography.Text></Card>}
 
       {!loading && plan && (
         <>
@@ -134,6 +176,30 @@ const PlanPage: React.FC = () => {
               ))}
             </Card>
           )}
+
+          {/* 排期聊天面板 */}
+          <Card title="排期调整讨论" style={{ marginBottom: 16 }}>
+            <div style={{ maxHeight: 400, overflowY: 'auto', marginBottom: 16 }}>
+              {chatMessages.map((msg, i) => (
+                <ChatBubble key={i} role={msg.role} content={msg.content} />
+              ))}
+              {sending && <ChatBubble role="agent" content="思考中..." />}
+            </div>
+            <ChatInput
+              onSend={handleSendFeedback}
+              disabled={sending || (plan.currentScheduleRound >= plan.maxScheduleRounds)}
+              placeholder={
+                plan.currentScheduleRound >= plan.maxScheduleRounds
+                  ? '已到达最大调整轮次'
+                  : '输入调整建议，例如：把材料整理放在周三上午、周三太满了...'
+              }
+            />
+            {plan.currentScheduleRound >= plan.maxScheduleRounds && (
+              <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
+                已到达最大调整轮次（{plan.maxScheduleRounds}轮），请确认或重新生成排期方案。
+              </Typography.Text>
+            )}
+          </Card>
 
           <Space style={{ justifyContent: 'center', display: 'flex' }}>
             <Button type="primary" size="large" onClick={handleConfirm} loading={confirming}>

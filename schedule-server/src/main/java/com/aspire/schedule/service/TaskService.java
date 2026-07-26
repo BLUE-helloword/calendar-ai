@@ -73,4 +73,14 @@ public class TaskService {
                         .eq(Task::getStatus, TaskStatus.DONE.name())
                         .between(Task::getEndTime, start, end));
     }
+
+    public List<Task> findByUserAndTimeRange(Long userId, java.time.LocalDateTime start, java.time.LocalDateTime end) {
+        return taskMapper.selectList(
+                new LambdaQueryWrapper<Task>()
+                        .eq(Task::getUserId, userId)
+                        .isNotNull(Task::getStartTime)
+                        .isNotNull(Task::getEndTime)
+                        .ge(Task::getStartTime, start)
+                        .le(Task::getStartTime, end));
+    }
 }

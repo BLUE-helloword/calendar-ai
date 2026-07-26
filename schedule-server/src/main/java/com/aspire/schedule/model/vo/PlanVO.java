@@ -10,6 +10,9 @@ public class PlanVO {
     private Long goalId;
     private String parsedTarget;
     private List<PlanItem> planItems;
+    private List<String> warnings;
+    private int currentScheduleRound;
+    private int maxScheduleRounds;
 
     @Data
     public static class PlanItem {
